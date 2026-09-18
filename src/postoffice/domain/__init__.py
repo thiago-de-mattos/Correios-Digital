@@ -1,5 +1,6 @@
 from postoffice.domain.message import (
     ChaveMensagem,
+    DestinatarioSemChaveError,
     Mensagem,
     MensagemVaziaError,
     agora,
@@ -15,6 +16,7 @@ __all__ = [
     "ChaveMensagem",
     "Mensagem",
     "MensagemVaziaError",
+    "DestinatarioSemChaveError",
     "agora",
     "gerar_chave",
     "Usuario",

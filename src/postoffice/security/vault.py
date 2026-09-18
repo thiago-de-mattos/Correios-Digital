@@ -40,6 +40,10 @@ class Cofre:
     def __init__(self, chave: bytes) -> None:
         self._fernet: Fernet | None = Fernet(chave)
 
+    @staticmethod
+    def gerar_chave() -> bytes:
+        return Fernet.generate_key()
+
     @classmethod
     def abrir(cls, senha: str, salt: bytes) -> Cofre:
         if not senha:
