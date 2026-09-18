@@ -52,10 +52,14 @@ def test_cifrar_e_decifrar_volta_ao_original():
 
 
 def test_texto_cifrado_nao_contem_o_original():
+    texto = "o contrato vence dia 30 de setembro"
     cofre = Cofre.abrir(SENHA, gerar_salt())
-    cifrado = cofre.cifrar("o contrato vence dia 30")
-    assert b"contrato" not in cifrado
-    assert b"30" not in cifrado
+    cifrado = cofre.cifrar(texto)
+
+    assert texto.encode() not in cifrado
+    for palavra in texto.split():
+        if len(palavra) >= 4:
+            assert palavra.encode() not in cifrado
 
 
 def test_mesma_mensagem_gera_cifras_diferentes():
