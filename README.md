@@ -1,7 +1,5 @@
 # Correios Digital
-[
-  
-]
+
 Sistema de mensageria segura: as mensagens ficam criptografadas e organizadas
 numa árvore binária de busca autobalanceada (AVL).
 
@@ -17,9 +15,11 @@ python3 -m venv .venv
 source .venv/bin/activate          # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 
+python3 scripts/servidor.py         # abre o sistema no navegador
 pytest                              # roda os testes
 python3 scripts/height_demo.py      # demonstração da Sprint 1
 python3 scripts/messaging_demo.py   # demonstração da Sprint 2
+python3 scripts/backup_demo.py      # demonstração da Sprint 3
 ```
 
 ---
@@ -33,8 +33,8 @@ digital-post-office/
 │   ├── security/        # hash de senha, cofre simétrico e chaves RSA
 │   ├── domain/          # entidades: Usuario e Mensagem
 │   ├── services/        # conversa, chaveiro, mensageria e autenticação
-│   ├── persistence/     # arquivo, pen drive, e-mail (Sprint 3)
-│   └── presentation/    # telas e plotagem (Sprint 4)
+│   ├── persistence/     # arquivo, pen drive, e-mail
+│   └── presentation/    # Flask, telas e plotagem
 ├── tests/
 ├── scripts/
 └── docs/
@@ -75,6 +75,13 @@ acompanhando a documentação, os casos de uso e o quadro de tarefas.
 | `security/vault.py` | `Cofre`, `cifrar`, `decifrar` |
 | `security/keys.py` | `gerar_par`, `cifrar_chave`, `impressao_digital` |
 | `services/keyring.py` | `Chaveiro` — árvore AVL de chaves públicas |
+| `persistence/serializer.py` | árvore ↔ JSON, em pré-ordem |
+| `persistence/repository.py` | `Repositorio` — grava e lê os arquivos |
+| `persistence/backup.py` | `exportar`, `importar`, `conferir` |
+| `persistence/mailer.py` | `enviar_backup` via SMTP |
+| `presentation/app.py` | rotas Flask e API entre máquinas |
+| `presentation/plot.py` | `arvore_para_svg` — desenho da AVL |
+| `presentation/network.py` | `ClienteRede` — fala com a outra máquina |
 | `domain/message.py` | `Mensagem`, `ChaveMensagem`, `gerar_chave` |
 | `domain/user.py` | `Usuario`, `cadastrar`, `entrar` |
 
@@ -155,6 +162,31 @@ que os dois lados conferem por um canal independente — o mesmo mecanismo do
 código de segurança do WhatsApp. A solução completa exigiria uma autoridade
 certificadora, fora do escopo do projeto.
 
+### Persistência: pré-ordem e JSON cifrado
+
+A árvore é gravada percorrida em **pré-ordem**. Relendo nessa mesma ordem, cada
+nó cai exatamente onde estava e a árvore é reconstruída com a forma idêntica —
+nenhuma rotação é disparada, porque a sequência já vem de uma AVL válida. Um
+teste confere isso comparando o percurso em pré-ordem antes e depois.
+
+O que vai em cada arquivo:
+
+| Arquivo | Conteúdo | Cifrado? |
+|---|---|---|
+| `usuarios.json` | hash da senha, salts, chave pública, chave privada em PEM cifrado | a privada já vem cifrada pela senha |
+| `chaveiro.json` | chaves públicas dos contatos | não precisa: são públicas |
+| `<login>/conversas/<id>.cofre` | a árvore de mensagens inteira | sim, pelo cofre pessoal do dono |
+
+As mensagens já estão cifradas individualmente. O arquivo de conversa é cifrado
+de novo por cima para esconder os **metadados**: com quem se falou, quando e
+quantas vezes. Um pen drive perdido não revela nem o conteúdo nem o padrão.
+
+A gravação passa por um arquivo `.tmp` que depois é renomeado. Se faltar energia
+no meio, o arquivo antigo continua íntegro em vez de ficar pela metade.
+
+Não usamos `pickle`: carregar um pickle executa código do arquivo, e um backup
+adulterado viraria execução remota. JSON só carrega dados.
+
 ### Onde o texto legível existe
 
 Só dentro de uma variável local, durante a exibição. A entidade `Mensagem` não
@@ -181,10 +213,56 @@ filho, não a chave inserida. É isso que faz a mesma função servir para
 |---|---|---|
 | 1 | Árvore AVL, cadastro, login, hash de senha | concluída |
 | 2 | Mensagens, criptografia, histórico, busca, remoção | concluída |
-| 3 | Persistência, backup, pen drive, e-mail | a fazer |
-| 4 | Plotagem, interface, documentação | a fazer |
+| 3 | Persistência, backup, pen drive, e-mail | concluída |
+| 4 | Plotagem, interface, documentação | concluída |
 
 ---
+
+## Como usar em duas máquinas
+
+Cada pessoa roda o próprio servidor. Não existe máquina central.
+
+```bash
+python3 scripts/servidor.py --porta 5000 --dados dados
+```
+
+O programa imprime dois endereços: `localhost` para você, e o IP da rede para
+passar aos colegas. Abra o `localhost` no navegador, crie sua conta, e em
+**Contatos** informe o endereço da outra máquina.
+
+O sistema busca a identidade do outro lado e mostra a **impressão digital** da
+chave pública. Confiram os 32 caracteres por voz antes de confirmar — é a defesa
+contra alguém trocar a chave no meio do caminho.
+
+### As telas
+
+| Rota | O que faz |
+|---|---|
+| `/cadastro` | cria a conta e gera o par de chaves |
+| `/login` | abre a chave privada e carrega as conversas do disco |
+| `/` | lista de contatos e conversas |
+| `/conversa/<login>` | histórico e envio |
+| `/contatos` | descobrir, conferir impressão digital e adicionar |
+| `/arvore/<login>` | desenho da AVL daquela conversa |
+| `/backup` | exportar, restaurar e enviar por e-mail |
+
+### A API entre máquinas
+
+| Rota | Uso |
+|---|---|
+| `GET /api/identidade` | devolve login, chave pública e impressão digital |
+| `POST /api/mensagens` | recebe uma mensagem cifrada de outra máquina |
+
+`POST /api/mensagens` só aceita mensagem de remetente que já esteja no chaveiro.
+Como o conteúdo vem cifrado para a chave pública do destinatário, o transporte
+não precisa ser confiável.
+
+### A plotagem
+
+O desenho é SVG gerado em Python, sem biblioteca gráfica. A posição de cada nó
+sai da própria estrutura: **x = ordem no percurso em ordem**, **y = profundidade**.
+São poucas linhas em `presentation/plot.py`, e é justamente o cálculo que mostra
+que a árvore foi entendida — uma biblioteca de grafos esconderia essa parte.
 
 ## Testes
 
