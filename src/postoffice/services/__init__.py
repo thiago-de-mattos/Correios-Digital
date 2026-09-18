@@ -6,7 +6,7 @@ from postoffice.services.authentication import (
     UsuarioNaoEncontradoError,
 )
 from postoffice.services.conversation import Conversa, ParticipanteInvalidoError
-from postoffice.services.keyring import Chaveiro, ContatoDesconhecidoError
+from postoffice.services.keyring import Chaveiro, Contato, ContatoDesconhecidoError
 from postoffice.services.messaging import (
     MensagemExibida,
     Mensageria,
@@ -22,6 +22,7 @@ __all__ = [
     "Conversa",
     "ParticipanteInvalidoError",
     "Chaveiro",
+    "Contato",
     "ContatoDesconhecidoError",
     "Mensageria",
     "MensagemExibida",

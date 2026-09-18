@@ -94,8 +94,11 @@ class Repositorio:
             {
                 "versao": VERSAO_FORMATO,
                 "contatos": {
-                    login: chaveiro.pem(login).decode("ascii")
-                    for login in chaveiro.contatos()
+                    contato.login: {
+                        "chave_publica": contato.chave_publica.decode("ascii"),
+                        "endereco": contato.endereco,
+                    }
+                    for contato in chaveiro.todos()
                 },
             },
         )
@@ -111,8 +114,17 @@ class Repositorio:
         except (KeyError, TypeError) as erro:
             raise ArquivoCorrompidoError("arquivo de chaveiro sem a chave esperada") from erro
 
-        for login, pem in contatos.items():
-            chaveiro.adicionar(login, pem.encode("ascii"))
+        for login, dados_do_contato in contatos.items():
+            try:
+                chaveiro.adicionar(
+                    login,
+                    dados_do_contato["chave_publica"].encode("ascii"),
+                    dados_do_contato.get("endereco"),
+                )
+            except (KeyError, TypeError, AttributeError) as erro:
+                raise ArquivoCorrompidoError(
+                    f"contato {login} em formato inválido"
+                ) from erro
         return chaveiro
 
     def caminho_da_conversa(self, login: str, identificador: str) -> Path:
