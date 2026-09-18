@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block titulo %}{{ contato.login }} — Correios Digital{% endblock %}
+
+{% block trilha %}
+<nav class="trilha" aria-label="Você está em">
+    <a class="voltar" href="{{ url_for('inicio') }}">Conversas</a>
+    <span class="separador">&rsaquo;</span>
+    <span class="atual">{{ contato.login }}</span>
+</nav>
+{% endblock %}
+
+{% block conteudo %}
+<h1>{{ contato.login }}</h1>
+<p class="subtitulo">
+    {{ conversa | length }} mensagens ·
+    altura da árvore {{ conversa.arvore.altura() }} ·
+    <a href="{{ url_for('arvore', outro=contato.login) }}">ver árvore</a>
+</p>
+
+<div class="cartao">
+    {% if historico %}
+    <div class="conversa">
+        {% for mensagem in historico %}
+        <div class="balao {{ 'meu' if mensagem.remetente == sessao.login else 'dele' }}
+                    {{ '' if mensagem.legivel else 'ilegivel' }}">
+            {{ mensagem.texto }}
+            <span class="marca">{{ mensagem.remetente }} · {{ mensagem.chave }}</span>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p class="vazio">Nenhuma mensagem ainda.</p>
+    {% endif %}
+
+    <form method="post">
+        <label for="texto">Nova mensagem</label>
+        <textarea id="texto" name="texto" required autofocus></textarea>
+        <button type="submit">Enviar</button>
+    </form>
+
+    {% if not contato.alcancavel %}
+    <p class="nota">{{ contato.login }} não tem endereço cadastrado: a mensagem
+        fica só nesta máquina.</p>
+    {% endif %}
+</div>
+{% endblock %}

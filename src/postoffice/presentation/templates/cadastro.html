@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block titulo %}Cadastro — Correios Digital{% endblock %}
+
+{% block trilha %}
+<nav class="trilha" aria-label="Você está em">
+    <a class="voltar" href="{{ url_for('login') }}">Entrar</a>
+    <span class="separador">&rsaquo;</span>
+    <span class="atual">Criar conta</span>
+</nav>
+{% endblock %}
+
+{% block conteudo %}
+<h1>Criar conta</h1>
+<p class="subtitulo">No cadastro é gerado seu par de chaves. A pública vai para quem
+    você quiser; a privada fica aqui, protegida pela sua senha.</p>
+
+<div class="cartao">
+    <form method="post">
+        <label for="login">Login</label>
+        <input id="login" name="login" autocomplete="username" autofocus required>
+
+        <label for="nome">Nome</label>
+        <input id="nome" name="nome" autocomplete="name" required>
+
+        <label for="email">E-mail</label>
+        <input id="email" name="email" type="email" autocomplete="email" required>
+
+        <label for="senha">Senha</label>
+        <input id="senha" name="senha" type="password" autocomplete="new-password" minlength="8" required>
+
+        <button type="submit">Criar conta</button>
+    </form>
+    <p class="nota">Se esquecer esta senha, as mensagens não podem ser recuperadas —
+        nem por nós. É o preço de a criptografia ser de verdade.</p>
+</div>
+{% endblock %}

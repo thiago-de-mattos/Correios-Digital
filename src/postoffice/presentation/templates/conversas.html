@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block titulo %}Conversas — Correios Digital{% endblock %}
+
+{% block conteudo %}
+<h1>Conversas</h1>
+<p class="subtitulo">Cada conversa é uma árvore AVL própria, ordenada pelo horário.</p>
+
+<div class="cartao">
+    {% if contatos %}
+    <ul class="lista">
+        {% for contato in contatos %}
+        {% if contato.login != sessao.login %}
+        <li>
+            <span>
+                <a href="{{ url_for('conversa', outro=contato.login) }}">{{ contato.login }}</a>
+                <span class="nota">
+                    {{ contato.endereco or 'sem endereço de rede' }}
+                </span>
+            </span>
+            <a href="{{ url_for('arvore', outro=contato.login) }}">ver árvore</a>
+        </li>
+        {% endif %}
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p class="vazio">Nenhum contato ainda.
+        <a href="{{ url_for('contatos') }}">Adicione o primeiro</a>.
+    </p>
+    {% endif %}
+</div>
+{% endblock %}

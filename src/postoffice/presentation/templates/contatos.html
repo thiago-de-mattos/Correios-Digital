@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block titulo %}Contatos — Correios Digital{% endblock %}
+
+{% block trilha %}
+<nav class="trilha" aria-label="Você está em">
+    <a class="voltar" href="{{ url_for('inicio') }}">Conversas</a>
+    <span class="separador">&rsaquo;</span>
+    <span class="atual">Contatos</span>
+</nav>
+{% endblock %}
+
+{% block conteudo %}
+<h1>Contatos</h1>
+<p class="subtitulo">O chaveiro é uma árvore AVL indexada pelo login.</p>
+
+<div class="cartao">
+    <h2>Sua identidade</h2>
+    <p class="nota">Leia estes 32 caracteres em voz alta para a outra pessoa
+        conferir. Ela não é um endereço e não deve ser colada em nenhum campo.</p>
+    <p class="impressao">{{ eu.impressao_digital() }}</p>
+</div>
+
+{% if descoberto %}
+<div class="cartao">
+    <h2>Confira antes de adicionar</h2>
+    <p>Encontrei <strong>{{ descoberto.login }}</strong> em
+        {{ descoberto.endereco }}.</p>
+    <p class="impressao">{{ descoberto.impressao_digital }}</p>
+    <p class="nota">Confirme esses 32 caracteres por telefone ou pessoalmente. Se não
+        baterem, alguém pode estar no meio do caminho trocando as chaves.</p>
+
+    <form method="post">
+        <input type="hidden" name="acao" value="confirmar">
+        <input type="hidden" name="login" value="{{ descoberto.login }}">
+        <input type="hidden" name="endereco" value="{{ descoberto.endereco }}">
+        <input type="hidden" name="chave_publica" value="{{ descoberto.chave_publica }}">
+        <button type="submit">Confere, adicionar</button>
+    </form>
+</div>
+{% endif %}
+
+<div class="cartao">
+    <h2>Adicionar contato</h2>
+    <form method="post">
+        <input type="hidden" name="acao" value="descobrir">
+        <label for="endereco">Endereço da outra máquina</label>
+        <input id="endereco" name="endereco" placeholder="192.168.0.15:5000" pattern="[A-Za-z0-9.:/_~%-]+"
+            title="IP e porta, por exemplo 192.168.0.15:5000" required>
+        <p class="dica">É o IP com a porta que aparece no terminal da outra pessoa
+            quando ela roda o servidor — algo como <strong>192.168.0.15:5000</strong>.
+            Não é a impressão digital.</p>
+        <button type="submit">Buscar identidade</button>
+    </form>
+</div>
+
+<div class="cartao">
+    <h2>No chaveiro</h2>
+    {% if contatos %}
+    <ul class="lista">
+        {% for contato in contatos %}
+        <li>
+            <span>
+                <strong>{{ contato.login }}</strong>
+                <span class="nota">{{ contato.endereco or 'sem endereço' }}</span>
+            </span>
+            <span class="impressao">{{ contato.impressao_digital }}</span>
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p class="vazio">Chaveiro vazio.</p>
+    {% endif %}
+</div>
+{% endblock %}

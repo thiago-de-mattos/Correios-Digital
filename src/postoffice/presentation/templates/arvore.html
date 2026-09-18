@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block titulo %}Árvore — {{ contato.login }}{% endblock %}
+
+{% block trilha %}
+<nav class="trilha" aria-label="Você está em">
+    <a class="voltar" href="{{ url_for('conversa', outro=contato.login) }}">
+        Conversa com {{ contato.login }}</a>
+    <span class="separador">&rsaquo;</span>
+    <span class="atual">Árvore</span>
+</nav>
+{% endblock %}
+
+{% block conteudo %}
+<h1>Árvore da conversa com {{ contato.login }}</h1>
+<p class="subtitulo">Posição horizontal = ordem cronológica (percurso em ordem).
+    Posição vertical = profundidade na árvore.</p>
+
+<div class="cartao">
+    <div class="desenho">{{ svg | safe }}</div>
+    <div class="medidas">
+        <span class="medida"><b>{{ conversa | length }}</b> mensagens</span>
+        <span class="medida"><b>{{ conversa.arvore.altura() }}</b> altura da AVL</span>
+        <span class="medida"><b>{{ altura_de_lista }}</b> altura se fosse lista</span>
+    </div>
+    <p class="nota">Passe o mouse num nó para ver o horário exato e o remetente.
+        Numa árvore de busca comum, com horários sempre crescentes, a altura seria igual
+        ao número de mensagens.</p>
+</div>
+{% endblock %}

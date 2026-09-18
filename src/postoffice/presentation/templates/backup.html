@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block titulo %}Backup — Correios Digital{% endblock %}
+
+{% block trilha %}
+<nav class="trilha" aria-label="Você está em">
+    <a class="voltar" href="{{ url_for('inicio') }}">Conversas</a>
+    <span class="separador">&rsaquo;</span>
+    <span class="atual">Backup</span>
+</nav>
+{% endblock %}
+
+{% block conteudo %}
+<h1>Backup</h1>
+<p class="subtitulo">Os dados ficam em <code>{{ pasta }}</code>.
+    {{ conversas | length }} conversa(s) gravada(s).</p>
+
+<div class="duas">
+    <div class="cartao">
+        <h2>Exportar</h2>
+        <form method="post">
+            <input type="hidden" name="acao" value="exportar">
+            <label for="destino-exportar">Pasta de destino (pen drive, por exemplo)</label>
+            <input id="destino-exportar" name="destino" placeholder="E:\ ou /media/pendrive">
+            <button type="submit">Gerar backup</button>
+        </form>
+        <p class="nota">As conversas já vão cifradas. Sem a sua senha, o arquivo é inútil.</p>
+    </div>
+
+    <div class="cartao">
+        <h2>Restaurar</h2>
+        <form method="post">
+            <input type="hidden" name="acao" value="importar">
+            <label for="destino-importar">Caminho do arquivo .zip</label>
+            <input id="destino-importar" name="destino" placeholder="E:\correios-digital-....zip">
+            <button type="submit" class="secundario">Restaurar</button>
+        </form>
+        <p class="nota">Substitui os dados desta máquina. Você será deslogado.</p>
+    </div>
+</div>
+
+<div class="cartao">
+    <h2>Enviar por e-mail</h2>
+    <form method="post">
+        <input type="hidden" name="acao" value="email">
+        <div class="duas">
+            <div>
+                <label for="servidor">Servidor SMTP</label>
+                <input id="servidor" name="servidor" placeholder="smtp.gmail.com">
+            </div>
+            <div>
+                <label for="porta">Porta</label>
+                <input id="porta" name="porta" value="587">
+            </div>
+            <div>
+                <label for="remetente">Seu e-mail</label>
+                <input id="remetente" name="remetente" type="email">
+            </div>
+            <div>
+                <label for="senha_email">Senha de aplicativo</label>
+                <input id="senha_email" name="senha_email" type="password">
+            </div>
+            <div>
+                <label for="para">Enviar para</label>
+                <input id="para" name="para" type="email">
+            </div>
+            <div>
+                <label for="destino-email">Pasta temporária do .zip</label>
+                <input id="destino-email" name="destino" placeholder=".">
+            </div>
+        </div>
+        <button type="submit">Enviar backup</button>
+    </form>
+    <p class="nota">Use uma senha de aplicativo, nunca a senha da sua conta de e-mail.</p>
+</div>
+{% endblock %}
