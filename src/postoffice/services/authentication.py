@@ -60,6 +60,16 @@ class Autenticacao:
         self.chaveiro = chaveiro if chaveiro is not None else Chaveiro()
         self._usuarios = ArvoreAVL()
 
+    @classmethod
+    def restaurar(cls, usuarios: ArvoreAVL, chaveiro: Chaveiro) -> Autenticacao:
+        servico = cls(chaveiro=chaveiro)
+        servico._usuarios = usuarios
+        return servico
+
+    @property
+    def usuarios(self) -> ArvoreAVL:
+        return self._usuarios
+
     def __len__(self) -> int:
         return len(self._usuarios)
 
